@@ -45,6 +45,11 @@ abstract class ApiDefinition extends JaguarInterceptors {
 #### run
 `jaguar_http build`
 
+#### use it
+```dart
+final api = new Api(new IOClient(), "http://localhost:9000", serializers: repo);
+```
+
 ## Features and bugs
 
 Please file feature requests and bugs at the [issue tracker][tracker].
