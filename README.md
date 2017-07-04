@@ -2,6 +2,10 @@
 
 An Http Api generator inspired by Retrofit for Dart
 
+## Install
+
+`pub global activate jaguar_http`
+
 ## Usage
 
 A simple usage example:
