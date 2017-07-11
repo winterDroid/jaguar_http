@@ -36,7 +36,7 @@ abstract class ApiDefinition extends JaguarInterceptors {
   @Put("/users/:uid")
   Future<JaguarResponse<User>> updateUser(@Param(name: "uid") String userId, @Body() User user);
 
-  @Delete("/users")
+  @Delete("/users/:id")
   Future<JaguarResponse> deleteUser(@Param() String id);
 }
 ```

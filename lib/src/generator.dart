@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
@@ -12,8 +13,8 @@ import 'package:code_builder/code_builder.dart';
 class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
   const JaguarHttpGenerator();
 
-  Future<String> generateForAnnotatedElement(
-      Element element, JaguarHttp annotation, BuildStep buildStep) async {
+  Future<String> generateForAnnotatedElement(Element element,
+      JaguarHttp annotation, BuildStep buildStep) async {
     if (element is! ClassElement) {
       var friendlyName = friendlyNameForElement(element);
       throw new InvalidGenerationSourceError(
@@ -44,20 +45,37 @@ class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
         MethodBuilder methodBuilder = new MethodBuilder(m.name,
             returnType: returnType, modifier: MethodModifier.asAsync);
 
-        methodBuilder.addStatements([
+        final statements = [
           _generateUrl(m, methodAnnot),
           _generateRequest(m, methodAnnot),
-          _generateInterceptRequest(),
+        ];
+
+        if (_needInterceptor(element)) {
+          statements.add(_generateInterceptRequest());
+        }
+
+        statements.addAll([
           _generateSendRequest(),
           varField("response"),
           _generateResponseProcess(m),
-          _generateInterceptResponse(),
-          reference("response").asReturn()
         ]);
 
+        if (_needInterceptor(element)) {
+          statements.add(_generateInterceptResponse());
+        }
+
+        statements.add(reference("response").asReturn());
+
+        methodBuilder.addStatements(statements);
+
         m.parameters.forEach((ParameterElement param) {
-          methodBuilder.addPositional(new ParameterBuilder(param.name,
-              type: new TypeBuilder(param.type.name)));
+          if (param.parameterKind == ParameterKind.NAMED) {
+            methodBuilder.addNamed(new ParameterBuilder(param.name,
+                type: new TypeBuilder(param.type.name)));
+          } else {
+            methodBuilder.addPositional(new ParameterBuilder(param.name,
+                type: new TypeBuilder(param.type.name)));
+          }
         });
 
         clazz.addMethod(methodBuilder);
@@ -67,6 +85,11 @@ class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
     return clazz.buildClass().toString();
   }
 
+  bool _needInterceptor(ClassElement element) =>
+      element.allSupertypes.any((InterfaceType t) => t.name ==
+          "JaguarInterceptors");
+
+
   _buildConstructor(ClassBuilder clazz) {
     clazz.addField(varFinal("baseUrl", type: new TypeBuilder("String")));
     clazz.addField(varFinal("headers", type: new TypeBuilder("Map")));
@@ -75,17 +98,20 @@ class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
         varFinal("serializers", type: new TypeBuilder("SerializerRepo")));
 
     clazz.addConstructor(new ConstructorBuilder()
-      ..addPositional(new ParameterBuilder("_client"), asField: true)
-      ..addPositional(new ParameterBuilder("baseUrl"), asField: true)
-      ..addNamed(new ParameterBuilder("headers", type: new TypeBuilder("Map")))
-      ..addNamed(new ParameterBuilder("serializers",
-          type: new TypeBuilder("SerializerRepo")))
+      ..addPositional(
+          new ParameterBuilder("_client"), asField: true)..addPositional(
+          new ParameterBuilder("baseUrl"), asField: true)
+      ..addNamed(new ParameterBuilder(
+          "headers", type: new TypeBuilder("Map")))..addNamed(
+          new ParameterBuilder("serializers",
+              type: new TypeBuilder("SerializerRepo")))
       ..addInitializer("headers",
           toExpression: new ExpressionBuilder.raw(
-              (_) => "headers ?? { 'content-type': 'application/json' }"))
-      ..addInitializer("serializers",
+                  (
+                  _) => "headers ?? { 'content-type': 'application/json' }"))..addInitializer(
+          "serializers",
           toExpression: new ExpressionBuilder.raw(
-              (_) => "serializers ?? new JsonRepo()")));
+                  (_) => "serializers ?? new JsonRepo()")));
   }
 
   ElementAnnotation _getMethodAnnotation(MethodElement method) =>
@@ -132,8 +158,8 @@ class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
     return _getResponseType(generic);
   }
 
-  StatementBuilder _generateUrl(
-      MethodElement method, ElementAnnotation methodAnnot) {
+  StatementBuilder _generateUrl(MethodElement method,
+      ElementAnnotation methodAnnot) {
     final annot = instantiateAnnotation(methodAnnot) as Req;
 
     String value = "${annot.url}";
@@ -146,11 +172,11 @@ class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
       }
     });
 
-    return literal('\$baseUrl/$value').asFinal("url");
+    return literal('\$baseUrl$value').asFinal("url");
   }
 
-  StatementBuilder _generateRequest(
-      MethodElement method, ElementAnnotation methodAnnot) {
+  StatementBuilder _generateRequest(MethodElement method,
+      ElementAnnotation methodAnnot) {
     final annot = instantiateAnnotation(methodAnnot) as Req;
 
     final params = {
@@ -173,18 +199,17 @@ class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
   }
 
   StatementBuilder _generateInterceptRequest() =>
-      ifThen(new ExpressionBuilder.raw((_) => "this is JaguarInterceptors"))
-        ..addStatement(reference("interceptRequest")
-            .call([reference("request")]).asAssign(reference("request")));
+      reference("interceptRequest")
+          .call([reference("request")]).asAssign(reference("request"));
 
   StatementBuilder _generateInterceptResponse() =>
-      ifThen(new ExpressionBuilder.raw((_) => "this is JaguarInterceptors"))
-        ..addStatement(reference("interceptResponse")
-            .call([reference("response")]).asAssign(reference("response")));
+      reference("interceptResponse")
+          .call([reference("response")]).asAssign(reference("response"));
 
-  StatementBuilder _generateSendRequest() => varFinal("rawResponse",
-      value: reference("request").invoke(
-          "send", [new ExpressionBuilder.raw((_) => "_client")]).asAwait());
+  StatementBuilder _generateSendRequest() =>
+      varFinal("rawResponse",
+          value: reference("request").invoke(
+              "send", [new ExpressionBuilder.raw((_) => "_client")]).asAwait());
 
   StatementBuilder _generateResponseProcess(MethodElement method) {
     final named = {};

@@ -4,8 +4,8 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 
-typedef JaguarRequest RequestInterceptor(JaguarRequest request);
-typedef JaguarResponse ResponseInterceptor(JaguarResponse response);
+typedef FutureOr<JaguarRequest> RequestInterceptor(JaguarRequest request);
+typedef FutureOr<JaguarResponse> ResponseInterceptor(JaguarResponse response);
 
 class JaguarHttp {
   final String name;
@@ -26,28 +26,34 @@ class Param {
   const Param({this.name});
 }
 
+class QueryParam {
+  final String name;
+
+  const QueryParam({this.name});
+}
+
 class Body {
   const Body();
 }
 
 class Get extends Req {
-  const Get(String url) : super("GET", url);
+  const Get([String url = "/"]) : super("GET", url);
 }
 
 class Post extends Req {
-  const Post(String url) : super("POST", url);
+  const Post([String url = "/"]) : super("POST", url);
 }
 
 class Put extends Req {
-  const Put(String url) : super("PUT", url);
+  const Put([String url = "/"]) : super("PUT", url);
 }
 
 class Delete extends Req {
-  const Delete(String url) : super("DELETE", url);
+  const Delete([String url = "/"]) : super("DELETE", url);
 }
 
 class Patch extends Req {
-  const Patch(String url) : super("PATCH", url);
+  const Patch([String url = "/"]) : super("PATCH", url);
 }
 
 class JaguarResponse<T> {
@@ -93,18 +99,18 @@ abstract class JaguarInterceptors {
   final List<ResponseInterceptor> responseInterceptors = [];
 
   @protected
-  JaguarRequest interceptRequest(JaguarRequest request) {
-    requestInterceptors.forEach((requestInterceptor) {
-      request = requestInterceptor(request);
-    });
+  FutureOr<JaguarRequest> interceptRequest(JaguarRequest request) async {
+    for (var requestInterceptor in requestInterceptors) {
+      request = await requestInterceptor(request);
+    }
     return request;
   }
 
   @protected
-  JaguarResponse interceptResponse(JaguarResponse response) {
-    responseInterceptors.forEach((responseInterceptor) {
-      response = responseInterceptor(response);
-    });
+  FutureOr<JaguarResponse> interceptResponse(JaguarResponse response) async {
+    for (var responseInterceptor in responseInterceptors) {
+      response = await responseInterceptor(response);
+    }
     return response;
   }
 }

@@ -17,20 +17,18 @@ abstract class ApiDefinition extends JaguarInterceptors {
   Future<JaguarResponse<User>> postUser(@Body() User user);
 
   @Put("/users/:uid")
-  Future<JaguarResponse<User>> updateUser(@Param(name: "uid") String userId, @Body() User user);
+  Future<JaguarResponse<User>> updateUser(
+      @Param(name: "uid") String userId, @Body() User user);
 
-  @Delete("/users")
+  @Delete("/users/:id")
   Future<JaguarResponse> deleteUser(@Param() String id);
 }
 
-JsonRepo repo = new JsonRepo()
-  ..add(new UserSerializer());
+JsonRepo repo = new JsonRepo()..add(new UserSerializer());
 
 void main() {
-  ApiDefinition api = new Api(
-      new IOClient(),
-      "http://localhost:9000",
-      serializers: repo);
+  ApiDefinition api =
+      new Api(new IOClient(), "http://localhost:9000", serializers: repo);
 
   api.requestInterceptors.add((JaguarRequest req) {
     req.headers["Authorization"] = "TOKEN";
