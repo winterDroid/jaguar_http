@@ -13,8 +13,8 @@ import 'package:code_builder/code_builder.dart';
 class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
   const JaguarHttpGenerator();
 
-  Future<String> generateForAnnotatedElement(Element element,
-      JaguarHttp annotation, BuildStep buildStep) async {
+  Future<String> generateForAnnotatedElement(
+      Element element, JaguarHttp annotation, BuildStep buildStep) async {
     if (element is! ClassElement) {
       var friendlyName = friendlyNameForElement(element);
       throw new InvalidGenerationSourceError(
@@ -80,11 +80,10 @@ class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
   _buildConstructor(ClassBuilder clazz) {
     clazz.addConstructor(new ConstructorBuilder(
         invokeSuper: [kClientRef, kBaseUrlRef, kHeadersRef, kSerializersRef])
-      ..addNamed(
-          new ParameterBuilder(kClient, type: kHttpClientType))..addNamed(
-          new ParameterBuilder(kBaseUrl, type: kStringType))..addNamed(
-          new ParameterBuilder(kHeaders, type: kMapType))..addNamed(
-          new ParameterBuilder(kSerializers, type: kSerializerType)));
+      ..addNamed(new ParameterBuilder(kClient, type: kHttpClientType))
+      ..addNamed(new ParameterBuilder(kBaseUrl, type: kStringType))
+      ..addNamed(new ParameterBuilder(kHeaders, type: kMapType))
+      ..addNamed(new ParameterBuilder(kSerializers, type: kSerializerType)));
   }
 
   ElementAnnotation _getMethodAnnotation(MethodElement method) =>
@@ -136,8 +135,8 @@ class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
     return _getResponseType(generic);
   }
 
-  StatementBuilder _generateUrl(MethodElement method,
-      ElementAnnotation methodAnnot) {
+  StatementBuilder _generateUrl(
+      MethodElement method, ElementAnnotation methodAnnot) {
     final annot = instantiateAnnotation(methodAnnot) as Req;
 
     String value = "${annot.url}";
@@ -166,14 +165,15 @@ class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
       });
       q += "}";
 
-      return literal('\$$kBaseUrl$value?\${$kParamsToQueryUri($q)}').asFinal(kUrl);
+      return literal('\$$kBaseUrl$value?\${$kParamsToQueryUri($q)}')
+          .asFinal(kUrl);
     }
 
     return literal('\$$kBaseUrl$value').asFinal(kUrl);
   }
 
-  StatementBuilder _generateRequest(MethodElement method,
-      ElementAnnotation methodAnnot) {
+  StatementBuilder _generateRequest(
+      MethodElement method, ElementAnnotation methodAnnot) {
     final annot = instantiateAnnotation(methodAnnot) as Req;
 
     final params = {
@@ -200,9 +200,8 @@ class JaguarHttpGenerator extends GeneratorForAnnotation<JaguarHttp> {
   StatementBuilder _generateInterceptResponse() =>
       kInterceptResRef.call([kResponseRef]).asAssign(kResponseRef);
 
-  StatementBuilder _generateSendRequest() =>
-      varFinal(kRawResponse,
-          value: kRequestRef.invoke(kSendMethod, [kClientRef]).asAwait());
+  StatementBuilder _generateSendRequest() => varFinal(kRawResponse,
+      value: kRequestRef.invoke(kSendMethod, [kClientRef]).asAwait());
 
   StatementBuilder _generateResponseProcess(MethodElement method) {
     final named = {};

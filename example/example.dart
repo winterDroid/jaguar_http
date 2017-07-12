@@ -18,13 +18,15 @@ abstract class ApiDefinition {
   Future<JaguarResponse<User>> postUser(@Body() User user);
 
   @Put("/users/:uid")
-  Future<JaguarResponse<User>> updateUser(@Param("uid") String userId, @Body() User user);
+  Future<JaguarResponse<User>> updateUser(
+      @Param("uid") String userId, @Body() User user);
 
   @Delete("/users/:id")
   Future<JaguarResponse> deleteUser(@Param() String id);
 
   @Get("/users")
-  Future<JaguarResponse<List<User>>> search({@QueryParam("n") String name, @QueryParam("e") String email});
+  Future<JaguarResponse<List<User>>> search(
+      {@QueryParam("n") String name, @QueryParam("e") String email});
 }
 
 JsonRepo repo = new JsonRepo()..add(new UserSerializer());
