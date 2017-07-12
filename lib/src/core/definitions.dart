@@ -2,6 +2,7 @@ library jaguar_http.definitions;
 
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'package:jaguar_serializer/serializer.dart';
 import 'package:meta/meta.dart';
 
 typedef FutureOr<JaguarRequest> RequestInterceptor(JaguarRequest request);
@@ -23,13 +24,13 @@ class Req {
 class Param {
   final String name;
 
-  const Param({this.name});
+  const Param([this.name]);
 }
 
 class QueryParam {
   final String name;
 
-  const QueryParam({this.name});
+  const QueryParam([this.name]);
 }
 
 class Body {
@@ -94,7 +95,17 @@ class JaguarRequest<T> {
   }
 }
 
-abstract class JaguarInterceptors {
+abstract class JaguarApiDefinition {
+  final String baseUrl;
+  final Map headers;
+  final http.Client client;
+  final SerializerRepo serializers;
+
+  JaguarApiDefinition(
+      this.client, this.baseUrl, Map headers, SerializerRepo serializers)
+      : headers = headers ?? {'content-type': 'application/json'},
+        serializers = serializers ?? new JsonRepo();
+
   final List<RequestInterceptor> requestInterceptors = [];
   final List<ResponseInterceptor> responseInterceptors = [];
 

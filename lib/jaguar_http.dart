@@ -6,8 +6,6 @@
 /// More dartdocs go here.
 library jaguar_http;
 
-export 'package:http/http.dart';
-export 'package:jaguar_serializer/serializer.dart';
-
-export 'src/definitions.dart';
-export 'src/utils.dart';
+export 'package:meta/meta.dart';
+export 'package:jaguar_http/src/core/definitions.dart';
+export 'package:jaguar_http/src/core/utils.dart';

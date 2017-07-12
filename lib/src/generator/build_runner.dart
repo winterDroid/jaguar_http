@@ -79,6 +79,6 @@ PhaseGroup phaseGroup({String configFileName: jaguarSerializerConfigFile}) {
 Stream<build_runner.BuildResult> watch() =>
     build_runner.watch(phaseGroup(), deleteFilesByDefault: true);
 
-/// Build all Serializer
+/// Build all Http Class
 Future<build_runner.BuildResult> build() =>
     build_runner.build(phaseGroup(), deleteFilesByDefault: true);
