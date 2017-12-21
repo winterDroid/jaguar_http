@@ -1,8 +1,8 @@
 library jaguar_http.definitions;
 
 import 'dart:async';
-import 'package:http/http.dart' as http;
 import 'package:jaguar_serializer/jaguar_serializer.dart';
+import 'package:jaguar_client/jaguar_client.dart';
 import 'package:meta/meta.dart';
 
 typedef FutureOr<JaguarRequest> RequestInterceptor(JaguarRequest request);
@@ -59,7 +59,7 @@ class Patch extends Req {
 
 class JaguarResponse<T> {
   final T body;
-  final http.Response rawResponse;
+  final JsonResponse rawResponse;
 
   JaguarResponse(this.body, this.rawResponse);
 
@@ -79,14 +79,15 @@ class JaguarRequest<T> {
 
   JaguarRequest({this.method, this.headers, this.body, this.url});
 
-  Future<http.Response> send(http.Client client) async {
+  Future<JsonResponse> send(JsonClient client) async {
     switch (method) {
       case "POST":
         return client.post(url, headers: headers, body: body);
       case "PUT":
         return client.put(url, headers: headers, body: body);
       case "PATCH":
-        return client.patch(url, headers: headers, body: body);
+        throw new Exception("Not implemented yet");
+//        return client.patch(url, headers: headers, body: body);
       case "DELETE":
         return client.delete(url, headers: headers);
       default:
@@ -98,7 +99,7 @@ class JaguarRequest<T> {
 abstract class JaguarApiDefinition {
   final String baseUrl;
   final Map headers;
-  final http.Client client;
+  final JsonClient client;
   final SerializerRepo serializers;
 
   JaguarApiDefinition(
