@@ -1,6 +1,6 @@
 library example.user;
 
-import 'package:jaguar_serializer/serializer.dart';
+import 'package:jaguar_serializer/jaguar_serializer.dart';
 
 part 'user.g.dart';
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:build_runner/build_runner.dart';
 import 'package:jaguar_http/jaguar_http_generator.dart';
-import 'package:jaguar_serializer/src/generator/config/config.dart';
+import 'package:jaguar_serializer_cli/src/config/config.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:build_runner/build_runner.dart' as build_runner;
 

@@ -2,7 +2,7 @@ library jaguar_http.definitions;
 
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:jaguar_serializer/serializer.dart';
+import 'package:jaguar_serializer/jaguar_serializer.dart';
 import 'package:meta/meta.dart';
 
 typedef FutureOr<JaguarRequest> RequestInterceptor(JaguarRequest request);
